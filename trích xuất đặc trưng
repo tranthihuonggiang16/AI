@@ -1,0 +1,15 @@
+
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+model = tf.keras.models.Sequential()
+#lớp CNN1
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(img_width, img_height, 3)))
+model.add(MaxPooling2D((2, 2)))
+#lớp CNN2
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Flatten())
+#lớp ẩn
+model.add(Dense(512, activation=tf.nn.relu))
+#lớp ra
+model.add(Dense(2, activation=tf.nn.softmax))
