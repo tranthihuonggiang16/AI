@@ -1,5 +1,4 @@
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
-
 y_pred = model.predict(valid_generator)
 y_pred_classes = np.argmax(y_pred, axis=1)
 y_true = valid_generator.classes
@@ -55,8 +54,7 @@ history = model.fit(
     epochs=EPOCHS,
     validation_data=valid_generator,
     validation_steps=validation_steps,
-    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)]
-)
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)])
 
 # Đánh giá mô hình trên tập dữ liệu huấn luyện và tập validation
 train_loss, train_accuracy = model.evaluate(train_generator)
