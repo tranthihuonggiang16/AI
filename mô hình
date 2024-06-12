@@ -1,1 +1,159 @@
+from tensorflow.keras.optimizers import RMSprop
+model.compile(optimizer=RMSprop(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+steps_per_epoch = len(train_generator)
+validation_steps = len(valid_generator)
+
+EPOCHS = 50
+history = model.fit(
+    train_generator,
+    steps_per_epoch=steps_per_epoch,
+    epochs=EPOCHS,
+    validation_data=valid_generator,
+    validation_steps=validation_steps,
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)]
+)
+from google.colab import files
+from keras.preprocessing import image
+%matplotlib inline
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
+
+uploaded = files.upload()
+label = ['Ô tô', 'Xe máy']
+for fn in uploaded.keys():
+    path = '/content/' + fn
+    # Hiển thị hình ảnh
+    plt.imshow(mpimg.imread(path))
+    plt.axis('off')  # Tắt hiển thị trục
+    plt.show()
+
+    # Tải và xử lý hình ảnh
+    img = image.load_img(path, target_size=(256, 256))  # Đảm bảo kích thước phù hợp với mô hình
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = x / 255.0  # Chuẩn hóa hình ảnh giống như trong ImageDataGenerator
+
+    # Dự đoán với mô hình
+    y_predict = model.predict(x)
+    print('Dự đoán:', y_predict)
+
+    predicted_label = label[np.argmax(y_predict)]
+    print('Giá trị dự đoán:', predicted_label)
+
+    if predicted_label == 'Ô tô':
+        print('Không vi phạm')
+    else:
+        print('Vi phạm')
+import matplotlib.pyplot as plt
+
+# Vẽ biểu đồ lịch sử huấn luyện
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+plt.show()
+train_loss = history.history['loss'][-1]
+train_accuracy = history.history['accuracy'][-1]
+val_loss = history.history['val_loss'][-1]
+val_accuracy = history.history['val_accuracy'][-1]
+
+print(f"Train Loss: {train_loss}")
+print(f"Train Accuracy: {train_accuracy}")
+print(f"Validation Loss: {val_loss}")
+print(f"Validation Accuracy: {val_accuracy}")
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+
+y_pred = model.predict(valid_generator)
+y_pred_classes = np.argmax(y_pred, axis=1)
+y_true = valid_generator.classes
+
+# Confusion Matrix
+conf_matrix = confusion_matrix(y_true, y_pred_classes)
+print("Confusion Matrix:")
+print(conf_matrix)
+
+# Classification Report
+class_report = classification_report(y_true, y_pred_classes, target_names=valid_generator.class_indices.keys())
+print("Classification Report:")
+print(class_report)
+
+# F1 Score, Precision, Recall
+from sklearn.metrics import f1_score, precision_score, recall_score
+
+f1 = f1_score(y_true, y_pred_classes, average='weighted')
+precision = precision_score(y_true, y_pred_classes, average='weighted')
+recall = recall_score(y_true, y_pred_classes, average='weighted')
+
+print(f"F1 Score: {f1}")
+print(f"Precision: {precision}")
+print(f"Recall: {recall}")
+from keras.layers import Dropout
+
+# Khởi tạo mô hình
+model = Sequential()
+
+# Thêm các lớp CNN
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(img_width, img_height, 3)))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Flatten())
+
+# Thêm các lớp ẩn với dropout sau các lớp ẩn để giảm overfitting
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.5))  # Thêm dropout với tỷ lệ là 0.5
+model.add(Dense(256, activation='relu'))
+model.add(Dropout(0.3))  # Thêm dropout với tỷ lệ là 0.3
+
+# Lớp output
+model.add(Dense(2, activation='softmax'))
+
+# Compile mô hình với optimizer RMSprop và learning rate là 0.001
+optimizer = RMSprop(learning_rate=0.001)
+model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+# Huấn luyện mô hình với các siêu tham số mới
+history = model.fit(
+    train_generator,
+    steps_per_epoch=steps_per_epoch,
+    epochs=EPOCHS,
+    validation_data=valid_generator,
+    validation_steps=validation_steps,
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)]
+)
+
+# Đánh giá mô hình trên tập dữ liệu huấn luyện và tập validation
+train_loss, train_accuracy = model.evaluate(train_generator)
+val_loss, val_accuracy = model.evaluate(valid_generator)
+
+# Tạo dự đoán từ mô hình
+predictions = model.predict(valid_generator)
+
+# Tính toán Confusion Matrix và Classification Report
+from sklearn.metrics import confusion_matrix, classification_report
+y_true = valid_generator.classes
+y_pred = np.argmax(predictions, axis=1)
+conf_matrix = confusion_matrix(y_true, y_pred)
+class_report = classification_report(y_true, y_pred)
+
+# Tính toán F1-score, Precision và Recall
+from sklearn.metrics import f1_score, precision_score, recall_score
+f1 = f1_score(y_true, y_pred, average='weighted')
+precision = precision_score(y_true, y_pred, average='weighted')
+recall = recall_score(y_true, y_pred, average='weighted')
+
+# In các kết quả
+print("Train Loss:", train_loss)
+print("Train Accuracy:", train_accuracy)
+print("Validation Loss:", val_loss)
+print("Validation Accuracy:", val_accuracy)
+print("Confusion Matrix:\n", conf_matrix)
+print("Classification Report:\n", class_report)
+print("F1 Score:", f1)
+print("Precision:", precision)
+print("Recall:", recall)
 
